@@ -44,8 +44,12 @@ import {
   checkOutVisitor,
 } from '../services/visitorService';
 import { getEmployees } from '../services/employeeService';
+import { getReceptionDashboardStats } from '../services/dashboardService';
 
 const ReceptionDashboard = () => {
+  // Live Reception Stats
+  const [receptionStats, setReceptionStats] = useState(null);
+
   // Active Tab ('ALL' | 'INSIDE' | 'CHECKINS' | 'CHECKOUTS')
   const [activeTab, setActiveTab] = useState('ALL');
 
@@ -99,6 +103,22 @@ const ReceptionDashboard = () => {
     };
     fetchEmployeesList();
   }, []);
+
+  // Fetch Live Reception Stats
+  const fetchReceptionStats = useCallback(async () => {
+    try {
+      const res = await getReceptionDashboardStats();
+      if (res?.success) {
+        setReceptionStats(res.data);
+      }
+    } catch (err) {
+      console.error('[Fetch Reception Stats Error]:', err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReceptionStats();
+  }, [fetchReceptionStats]);
 
   // Fetch Visitors List based on Active Tab
   const fetchVisitorsData = useCallback(async () => {
@@ -298,21 +318,35 @@ const ReceptionDashboard = () => {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card title="Total Registrations" value={pagination.total} icon={Users} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Card
+          title="Today's Visitors"
+          value={receptionStats ? receptionStats.todayVisitors : pagination.total}
+          icon={Users}
+        />
+        <Card
+          title="Pending Approvals"
+          value={receptionStats ? receptionStats.pendingApprovals : '--'}
+          icon={Clock}
+        />
+        <Card
+          title="Approved Visitors"
+          value={receptionStats ? receptionStats.approvedVisitors : '--'}
+          icon={CheckCircle2}
+        />
         <Card
           title="Currently Inside"
-          value={activeTab === 'INSIDE' ? pagination.total : '--'}
+          value={receptionStats ? receptionStats.currentlyInside : '--'}
           icon={LogIn}
         />
         <Card
-          title="Today's Check-Ins"
-          value={activeTab === 'CHECKINS' ? pagination.total : '--'}
+          title="Today Check-Ins"
+          value={receptionStats ? receptionStats.todayCheckIns : '--'}
           icon={UserCheck}
         />
         <Card
-          title="Today's Check-Outs"
-          value={activeTab === 'CHECKOUTS' ? pagination.total : '--'}
+          title="Today Check-Outs"
+          value={receptionStats ? receptionStats.todayCheckOuts : '--'}
           icon={LogOut}
         />
       </div>

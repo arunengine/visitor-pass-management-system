@@ -6,6 +6,7 @@
 
 const Visitor = require('../models/visitorModel');
 const Employee = require('../models/employeeModel');
+const logActivity = require('../utils/activityLogger');
 
 /**
  * Get all visitors with search, filter, and pagination.
@@ -213,6 +214,14 @@ const createVisitor = async (visitorData, userId) => {
 
   await newVisitor.save();
 
+  await logActivity({
+    action: 'VISITOR_CREATED',
+    visitorId: newVisitor._id,
+    userId,
+    role: 'USER',
+    remarks: 'Registered new visitor',
+  });
+
   return await Visitor.findById(newVisitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
     .populate('createdBy', 'name email role');
@@ -284,6 +293,14 @@ const cancelVisitor = async (id) => {
 
   visitor.status = 'CANCELLED';
   await visitor.save();
+
+  await logActivity({
+    action: 'VISITOR_CANCELLED',
+    visitorId: visitor._id,
+    userId: visitor.createdBy,
+    role: 'USER',
+    remarks: 'Visitor registration cancelled',
+  });
 
   return await Visitor.findById(visitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
@@ -381,6 +398,14 @@ const approveVisitorRequest = async (id, user, remarks = '') => {
 
   await visitor.save();
 
+  await logActivity({
+    action: 'VISITOR_APPROVED',
+    visitorId: visitor._id,
+    userId: user.id,
+    role: user.role,
+    remarks: remarks || 'Request approved by host',
+  });
+
   return await Visitor.findById(visitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
     .populate('createdBy', 'name email role')
@@ -424,6 +449,14 @@ const rejectVisitorRequest = async (id, user, remarks = '') => {
   if (remarks) visitor.approvalRemarks = remarks;
 
   await visitor.save();
+
+  await logActivity({
+    action: 'VISITOR_REJECTED',
+    visitorId: visitor._id,
+    userId: user.id,
+    role: user.role,
+    remarks: remarks || 'Request declined by host',
+  });
 
   return await Visitor.findById(visitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
@@ -477,6 +510,14 @@ const checkInVisitor = async (id, userId) => {
 
   await visitor.save();
 
+  await logActivity({
+    action: 'VISITOR_CHECKED_IN',
+    visitorId: visitor._id,
+    userId,
+    role: 'RECEPTIONIST',
+    remarks: 'Visitor checked in at reception',
+  });
+
   return await Visitor.findById(visitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
     .populate('createdBy', 'name email role')
@@ -515,6 +556,14 @@ const checkOutVisitor = async (id, userId) => {
   visitor.checkedOutBy = userId;
 
   await visitor.save();
+
+  await logActivity({
+    action: 'VISITOR_CHECKED_OUT',
+    visitorId: visitor._id,
+    userId,
+    role: 'RECEPTIONIST',
+    remarks: 'Visitor checked out',
+  });
 
   return await Visitor.findById(visitor._id)
     .populate('employee', 'employeeCode firstName lastName department designation status')

@@ -151,6 +151,12 @@ visitorSchema.pre('validate', async function (next) {
   next();
 });
 
+// Database Index Optimization
+visitorSchema.index({ visitorId: 1 });
+visitorSchema.index({ phone: 1, visitDate: 1 });
+visitorSchema.index({ employee: 1, status: 1 });
+visitorSchema.index({ status: 1, visitDate: 1 });
+
 const Visitor = mongoose.model('Visitor', visitorSchema);
 
 module.exports = Visitor;

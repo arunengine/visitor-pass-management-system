@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, FileText, History } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES, ROLES } from '../constants';
 
@@ -33,6 +33,18 @@ const Sidebar = () => {
       path: ROUTES.EMPLOYEE_DASHBOARD,
       icon: Users,
       roles: [ROLES.ADMIN, ROLES.EMPLOYEE],
+    },
+    {
+      name: 'Reports & Analytics',
+      path: ROUTES.REPORTS,
+      icon: FileText,
+      roles: [ROLES.ADMIN, ROLES.RECEPTIONIST],
+    },
+    {
+      name: 'Activity History',
+      path: ROUTES.ACTIVITY_HISTORY,
+      icon: History,
+      roles: [ROLES.ADMIN, ROLES.RECEPTIONIST],
     },
   ];
 

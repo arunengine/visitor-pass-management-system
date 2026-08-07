@@ -9,6 +9,8 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   RECEPTION_DASHBOARD: '/reception/dashboard',
   EMPLOYEE_DASHBOARD: '/employee/dashboard',
+  REPORTS: '/reports',
+  ACTIVITY_HISTORY: '/activity-history',
   UNAUTHORIZED: '/unauthorized',
   NOT_FOUND: '*',
 };

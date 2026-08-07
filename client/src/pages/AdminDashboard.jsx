@@ -23,6 +23,9 @@ import {
   Shield,
   KeyRound,
   UserPlus,
+  Clock,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 
 import Card from '../components/cards/Card';
@@ -58,8 +61,13 @@ import {
   resetPassword,
 } from '../services/userService';
 
+import { getAdminDashboardStats } from '../services/dashboardService';
+
 const AdminDashboard = () => {
   const { user: currentLoggedUser } = useAuth();
+
+  // Live Stats State
+  const [adminStats, setAdminStats] = useState(null);
 
   // Active Tab State ('EMPLOYEES' | 'USERS')
   const [activeTab, setActiveTab] = useState('EMPLOYEES');
@@ -158,6 +166,22 @@ const AdminDashboard = () => {
       fetchUsersData();
     }
   }, [activeTab, fetchEmployeesData, fetchUsersData]);
+
+  // Fetch Admin Live Stats
+  const fetchAdminStats = useCallback(async () => {
+    try {
+      const res = await getAdminDashboardStats();
+      if (res?.success) {
+        setAdminStats(res.data);
+      }
+    } catch (err) {
+      console.error('[Fetch Admin Stats Error]:', err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAdminStats();
+  }, [fetchAdminStats]);
 
   // --- EMPLOYEE HANDLERS ---
   const handleCreateEmployee = async (data) => {
@@ -359,6 +383,26 @@ const AdminDashboard = () => {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Live System Overview Metrics */}
+      {adminStats && (
+        <div className="space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Live System Overview</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <Card title="Total Employees" value={adminStats.totalEmployees} icon={Users} />
+            <Card title="Total Users" value={adminStats.totalUserAccounts} icon={Shield} />
+            <Card title="Total Visitors" value={adminStats.totalVisitors} icon={UserCheck} />
+            <Card title="Pending" value={adminStats.pendingRequests} icon={Clock} />
+            <Card title="Approved" value={adminStats.approvedVisitors} icon={CheckCircle2} />
+            <Card title="Rejected" value={adminStats.rejectedVisitors} icon={UserX} />
+            <Card title="Checked In" value={adminStats.checkedInVisitors} icon={LogIn} />
+            <Card title="Inside Premises" value={adminStats.currentlyInside} icon={LogIn} />
+            <Card title="Today Visitors" value={adminStats.todayVisitors} icon={Users} />
+            <Card title="Today Check-Ins" value={adminStats.todayCheckIns} icon={LogIn} />
+            <Card title="Today Check-Outs" value={adminStats.todayCheckOuts} icon={LogOut} />
+          </div>
         </div>
       )}
 

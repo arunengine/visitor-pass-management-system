@@ -30,8 +30,12 @@ import {
   approveVisitor,
   rejectVisitor,
 } from '../services/visitorService';
+import { getEmployeeDashboardStats } from '../services/dashboardService';
 
 const EmployeeDashboard = () => {
+  // Live Employee Stats
+  const [employeeStats, setEmployeeStats] = useState(null);
+
   // Active Tab ('PENDING' | 'APPROVED' | 'REJECTED')
   const [activeTab, setActiveTab] = useState('PENDING');
 
@@ -59,6 +63,22 @@ const EmployeeDashboard = () => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 4000);
   };
+
+  // Fetch Live Employee Stats
+  const fetchEmployeeStats = useCallback(async () => {
+    try {
+      const res = await getEmployeeDashboardStats();
+      if (res?.success) {
+        setEmployeeStats(res.data);
+      }
+    } catch (err) {
+      console.error('[Fetch Employee Stats Error]:', err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEmployeeStats();
+  }, [fetchEmployeeStats]);
 
   // Fetch Requests based on active tab
   const fetchMyVisitors = useCallback(async () => {
@@ -165,21 +185,26 @@ const EmployeeDashboard = () => {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card
           title="Pending Requests"
-          value={activeTab === 'PENDING' ? pagination.total : '--'}
+          value={employeeStats ? employeeStats.pendingRequests : '--'}
           icon={Clock}
         />
         <Card
-          title="Approved Visits"
-          value={activeTab === 'APPROVED' ? pagination.total : '--'}
+          title="Approved Requests"
+          value={employeeStats ? employeeStats.approvedRequests : '--'}
           icon={CheckCircle}
         />
         <Card
-          title="Rejected Visits"
-          value={activeTab === 'REJECTED' ? pagination.total : '--'}
+          title="Rejected Requests"
+          value={employeeStats ? employeeStats.rejectedRequests : '--'}
           icon={XCircle}
+        />
+        <Card
+          title="Today's Visitors"
+          value={employeeStats ? employeeStats.todayVisitors : '--'}
+          icon={UserCheck}
         />
       </div>
 
