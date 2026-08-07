@@ -13,6 +13,8 @@ const { HTTP_STATUS } = require('./constants');
 // Import Route Handlers
 const authRoutes = require('./routes/authRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
+const userRoutes = require('./routes/userRoutes');
+const visitorRoutes = require('./routes/visitorRoutes');
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use(cookieParser()); // Parse Cookies
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/employees', employeeRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/visitors', visitorRoutes);
 
 // Health Check Endpoint (For testing server status)
 app.get('/api/health', (req, res) => {

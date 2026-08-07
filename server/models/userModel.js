@@ -10,6 +10,11 @@ const { ROLES } = require('../constants');
 
 const userSchema = new mongoose.Schema(
   {
+    employee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Employee',
+      default: null,
+    },
     name: {
       type: String,
       required: [true, 'Name is required'],
