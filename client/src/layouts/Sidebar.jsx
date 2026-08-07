@@ -1,44 +1,53 @@
 /**
  * Sidebar Component
- * Purpose: Provides role-aware navigation options and quick route switches.
+ * Purpose: Role-aware navigation menu that dynamically displays only the links
+ * permitted for the currently logged-in user's role.
  */
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, ShieldAlert } from 'lucide-react';
-import { ROUTES } from '../constants';
+import { LayoutDashboard, Users, UserCheck } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { ROUTES, ROLES } from '../constants';
 
 const Sidebar = () => {
-  const navItems = [
+  const { user } = useAuth();
+  const role = user?.role;
+
+  // Master navigation list with role accessibility rules
+  const allNavItems = [
     {
       name: 'Admin Dashboard',
       path: ROUTES.ADMIN_DASHBOARD,
       icon: LayoutDashboard,
+      roles: [ROLES.ADMIN],
     },
     {
       name: 'Reception Portal',
       path: ROUTES.RECEPTION_DASHBOARD,
       icon: UserCheck,
+      roles: [ROLES.ADMIN, ROLES.RECEPTIONIST],
     },
     {
       name: 'Employee Portal',
       path: ROUTES.EMPLOYEE_DASHBOARD,
       icon: Users,
-    },
-    {
-      name: 'Unauthorized',
-      path: ROUTES.UNAUTHORIZED,
-      icon: ShieldAlert,
+      roles: [ROLES.ADMIN, ROLES.EMPLOYEE],
     },
   ];
+
+  // Filter navigation links allowed for current user's role
+  const permittedItems = allNavItems.filter((item) =>
+    item.roles.includes(role)
+  );
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        Navigation
+        Navigation Menu
       </div>
       <nav className="flex-1 px-3 space-y-1">
-        {navItems.map((item) => {
+        {permittedItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -59,7 +68,7 @@ const Sidebar = () => {
         })}
       </nav>
       <div className="p-4 border-t border-slate-800 text-xs text-slate-400">
-        Role: <span className="text-sky-400 font-semibold">Junior Developer Demo</span>
+        Active Role: <span className="text-sky-400 font-semibold">{role || 'GUEST'}</span>
       </div>
     </aside>
   );

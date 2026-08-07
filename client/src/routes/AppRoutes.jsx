@@ -1,14 +1,18 @@
 /**
  * Application Routes Configuration
- * Purpose: Defines client-side routing structure mapping URLs to layouts & page components.
+ * Purpose: Configures application client-side route tree with ProtectedRoute and RoleRoute protection.
  */
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ROUTES } from '../constants';
+import { ROUTES, ROLES } from '../constants';
 
 // Layout
 import DashboardLayout from '../layouts/DashboardLayout';
+
+// Protection Wrappers
+import ProtectedRoute from './ProtectedRoute';
+import RoleRoute from './RoleRoute';
 
 // Pages
 import Login from '../pages/Login';
@@ -25,12 +29,27 @@ const AppRoutes = () => {
       <Route path={ROUTES.LOGIN} element={<Login />} />
       <Route path={ROUTES.UNAUTHORIZED} element={<Unauthorized />} />
 
-      {/* Protected Dashboard Layout Routes */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/" element={<Navigate to={ROUTES.ADMIN_DASHBOARD} replace />} />
-        <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
-        <Route path={ROUTES.RECEPTION_DASHBOARD} element={<ReceptionDashboard />} />
-        <Route path={ROUTES.EMPLOYEE_DASHBOARD} element={<EmployeeDashboard />} />
+      {/* Protected Routes (Requires Login) */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<DashboardLayout />}>
+          {/* Default redirect to Login or Dashboard */}
+          <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+
+          {/* Admin Only Route */}
+          <Route element={<RoleRoute allowedRoles={[ROLES.ADMIN]} />}>
+            <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
+          </Route>
+
+          {/* Receptionist Only Route */}
+          <Route element={<RoleRoute allowedRoles={[ROLES.RECEPTIONIST, ROLES.ADMIN]} />}>
+            <Route path={ROUTES.RECEPTION_DASHBOARD} element={<ReceptionDashboard />} />
+          </Route>
+
+          {/* Employee Only Route */}
+          <Route element={<RoleRoute allowedRoles={[ROLES.EMPLOYEE, ROLES.ADMIN]} />}>
+            <Route path={ROUTES.EMPLOYEE_DASHBOARD} element={<EmployeeDashboard />} />
+          </Route>
+        </Route>
       </Route>
 
       {/* Fallback 404 Route */}

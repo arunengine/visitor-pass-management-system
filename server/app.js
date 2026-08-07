@@ -10,6 +10,10 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const { HTTP_STATUS } = require('./constants');
 
+// Import Route Handlers
+const authRoutes = require('./routes/authRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
+
 const app = express();
 
 // Global Middleware Configuration
@@ -23,6 +27,10 @@ app.use(
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse Cookies
+
+// API Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/employees', employeeRoutes);
 
 // Health Check Endpoint (For testing server status)
 app.get('/api/health', (req, res) => {

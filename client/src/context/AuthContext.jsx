@@ -1,27 +1,63 @@
 /**
  * Authentication Context Provider
- * Purpose: Manages global authentication state (user, token, role, status)
- * throughout the React application lifecycle.
+ * Purpose: Manages global user authentication state (user info, loading status)
+ * and provides login/logout API methods connected to Express backend.
+ * Persists login state across page refreshes by validating session on mount via /api/v1/auth/me.
  */
 
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
-// Create Auth Context
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Global auth state placeholder
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // True initially while checking session
 
-  // Authentication functions placeholder (To be expanded during Auth feature development)
-  const login = async (credentials) => {
-    console.log('[AuthContext]: Login method placeholder invoked with', credentials);
+  // Fetch current user session on application load (Persists login on refresh)
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await api.get('/v1/auth/me');
+        if (response.data?.success) {
+          setUser(response.data.data.user);
+        }
+      } catch (error) {
+        // Token missing or expired - user is unauthenticated
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  // Login Method: Sends credentials to POST /api/v1/auth/login
+  const login = async (email, password) => {
+    try {
+      const response = await api.post('/v1/auth/login', { email, password });
+      if (response.data?.success) {
+        const authenticatedUser = response.data.data.user;
+        setUser(authenticatedUser);
+        return { success: true, user: authenticatedUser };
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || 'Login failed. Please check your credentials.';
+      return { success: false, error: errorMessage };
+    }
   };
 
+  // Logout Method: Sends request to POST /api/v1/auth/logout and clears user state
   const logout = async () => {
-    console.log('[AuthContext]: Logout method placeholder invoked');
-    setUser(null);
+    try {
+      await api.post('/v1/auth/logout');
+    } catch (error) {
+      console.error('[Logout Error]:', error.message);
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
