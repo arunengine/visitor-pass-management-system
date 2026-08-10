@@ -284,7 +284,7 @@ const ReceptionDashboard = () => {
             setModalError('');
             setIsVisitorModalOpen(true);
           }}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Register New Visitor</span>
@@ -318,7 +318,7 @@ const ReceptionDashboard = () => {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         <Card
           title="Today's Visitors"
           value={receptionStats ? receptionStats.todayVisitors : pagination.total}
@@ -352,19 +352,19 @@ const ReceptionDashboard = () => {
       </div>
 
       {/* Tab Selector */}
-      <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="flex border-b border-gray-200 overflow-x-auto max-w-full whitespace-nowrap">
         <button
           onClick={() => {
             setActiveTab('ALL');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'ALL'
               ? 'border-sky-600 text-sky-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 shrink-0" />
           <span>All Registrations</span>
         </button>
 
@@ -373,13 +373,13 @@ const ReceptionDashboard = () => {
             setActiveTab('INSIDE');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'INSIDE'
               ? 'border-emerald-600 text-emerald-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <LogIn className="w-4 h-4" />
+          <LogIn className="w-4 h-4 shrink-0" />
           <span>Currently Inside {activeTab === 'INSIDE' && `(${pagination.total})`}</span>
         </button>
 
@@ -388,13 +388,13 @@ const ReceptionDashboard = () => {
             setActiveTab('CHECKINS');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'CHECKINS'
               ? 'border-blue-600 text-blue-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <UserCheck className="w-4 h-4" />
+          <UserCheck className="w-4 h-4 shrink-0" />
           <span>Today's Check-Ins {activeTab === 'CHECKINS' && `(${pagination.total})`}</span>
         </button>
 
@@ -403,19 +403,19 @@ const ReceptionDashboard = () => {
             setActiveTab('CHECKOUTS');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'CHECKOUTS'
               ? 'border-purple-600 text-purple-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 shrink-0" />
           <span>Today's Check-Outs {activeTab === 'CHECKOUTS' && `(${pagination.total})`}</span>
         </button>
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Search */}
         <div className="relative w-full md:w-72">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -433,8 +433,8 @@ const ReceptionDashboard = () => {
 
         {/* Filters (Only shown on 'ALL' tab) */}
         {activeTab === 'ALL' && (
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium">
               <span>Visit Date:</span>
               <input
                 type="date"
@@ -506,11 +506,9 @@ const ReceptionDashboard = () => {
           <Loader message="Loading visitor logs..." />
         ) : visitors.length === 0 ? (
           <div className="text-center py-12 space-y-3">
-            <UserCheck className="w-12 h-12 text-gray-300 mx-auto" />
-            <h3 className="text-base font-semibold text-gray-700">No Visitors Found</h3>
-            <p className="text-xs text-gray-400 max-w-sm mx-auto">
-              No registered visitors match your view tab or search criteria.
-            </p>
+            <Users className="w-12 h-12 text-gray-300 mx-auto" />
+            <h3 className="text-base font-semibold text-gray-700">No Visitor Records Found</h3>
+            <p className="text-sm text-gray-400">Try adjusting your filters or register a new visitor.</p>
           </div>
         ) : (
           <>
@@ -518,9 +516,9 @@ const ReceptionDashboard = () => {
               {visitors.map((v) => (
                 <tr key={v._id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3 font-semibold text-sky-700">{v.visitorId}</td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">{v.fullName}</p>
-                    <p className="text-xs text-gray-500">{v.phone}</p>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {v.fullName}
+                    <p className="text-xs text-gray-400 font-normal">{v.phone}</p>
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-xs font-semibold text-gray-700">{v.company}</p>
@@ -528,35 +526,32 @@ const ReceptionDashboard = () => {
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {v.employee ? (
-                      <span className="font-medium text-gray-800">
-                        {v.employee.firstName} {v.employee.lastName}
-                        <br />
-                        <span className="text-sky-600">({v.employee.employeeCode})</span>
-                      </span>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {v.employee.firstName} {v.employee.lastName}
+                        </p>
+                        <p className="text-gray-400">{v.employee.department}</p>
+                      </div>
                     ) : (
-                      'N/A'
+                      <span className="text-gray-400 font-italic">N/A</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-700">
-                    {v.checkInTime ? (
-                      <div>
-                        <p className="text-emerald-700 font-semibold">
-                          In: {new Date(v.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                        {v.checkOutTime && (
-                          <p className="text-red-700 font-semibold">
-                            Out: {new Date(v.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                  <td className="px-4 py-3 text-xs">
+                    <p className="font-medium text-gray-700">
+                      {v.visitDate ? new Date(v.visitDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                    {v.actualCheckInTime ? (
+                      <div className="text-[11px] text-emerald-600 font-medium">
+                        In: {new Date(v.actualCheckInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {v.actualCheckOutTime && (
+                          <span className="text-purple-600 block">
+                            Out: {new Date(v.actualCheckOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         )}
                       </div>
                     ) : (
-                      <div>
-                        <p className="font-medium">
-                          {new Date(v.visitDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
+                      <div className="text-[11px] text-gray-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-gray-400" />
                         <p className="text-gray-400">{v.expectedArrivalTime}</p>
                       </div>
                     )}
@@ -584,7 +579,7 @@ const ReceptionDashboard = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {/* View Details Drawer */}
                       <button
                         onClick={() => {
@@ -629,7 +624,7 @@ const ReceptionDashboard = () => {
                             setModalError('');
                             setIsVisitorModalOpen(true);
                           }}
-                          title="Edit Visitor"
+                          title="Edit Details"
                           className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -640,7 +635,7 @@ const ReceptionDashboard = () => {
                       {(v.status === 'PENDING' || v.status === 'APPROVED') && (
                         <button
                           onClick={() => setCancelTarget(v)}
-                          title="Cancel Registration"
+                          title="Cancel Visitor"
                           className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                         >
                           <XCircle className="w-4 h-4" />

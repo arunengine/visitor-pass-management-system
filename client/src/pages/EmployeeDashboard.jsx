@@ -185,7 +185,7 @@ const EmployeeDashboard = () => {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Card
           title="Pending Requests"
           value={employeeStats ? employeeStats.pendingRequests : '--'}
@@ -209,19 +209,19 @@ const EmployeeDashboard = () => {
       </div>
 
       {/* Tab Selector */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto max-w-full whitespace-nowrap">
         <button
           onClick={() => {
             setActiveTab('PENDING');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'PENDING'
               ? 'border-amber-600 text-amber-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Clock className="w-4 h-4" />
+          <Clock className="w-4 h-4 shrink-0" />
           <span>Pending Approvals {activeTab === 'PENDING' && `(${pagination.total})`}</span>
         </button>
 
@@ -230,13 +230,13 @@ const EmployeeDashboard = () => {
             setActiveTab('APPROVED');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'APPROVED'
               ? 'border-emerald-600 text-emerald-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <CheckCircle className="w-4 h-4" />
+          <CheckCircle className="w-4 h-4 shrink-0" />
           <span>Approved Requests {activeTab === 'APPROVED' && `(${pagination.total})`}</span>
         </button>
 
@@ -245,20 +245,20 @@ const EmployeeDashboard = () => {
             setActiveTab('REJECTED');
             setPage(1);
           }}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors shrink-0 flex items-center gap-2 ${
             activeTab === 'REJECTED'
               ? 'border-red-600 text-red-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <XCircle className="w-4 h-4" />
+          <XCircle className="w-4 h-4 shrink-0" />
           <span>Rejected Requests {activeTab === 'REJECTED' && `(${pagination.total})`}</span>
         </button>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-        <div className="relative w-full md:w-80">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"

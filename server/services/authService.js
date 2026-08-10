@@ -12,7 +12,8 @@ const { generateToken } = require('../utils/jwt');
  */
 const loginUser = async (email, password) => {
   // Find user by email and explicitly include password field for comparison
-  const user = await User.findOne({ email }).select('+password');
+  const cleanEmail = email ? email.toLowerCase().trim() : '';
+  const user = await User.findOne({ email: cleanEmail }).select('+password');
 
   if (!user) {
     const error = new Error('Invalid email or password');

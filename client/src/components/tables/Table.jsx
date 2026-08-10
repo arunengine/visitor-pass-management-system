@@ -7,12 +7,12 @@ import React from 'react';
 
 const Table = ({ headers = [], children }) => {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200 bg-white text-sm text-left">
+    <div className="w-full max-w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+      <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-sm text-left">
         <thead className="bg-gray-50 text-gray-700 font-semibold uppercase text-xs">
           <tr>
             {headers.map((header, idx) => (
-              <th key={idx} className="px-4 py-3">
+              <th key={idx} className="px-3 sm:px-4 py-3 whitespace-nowrap">
                 {header}
               </th>
             ))}

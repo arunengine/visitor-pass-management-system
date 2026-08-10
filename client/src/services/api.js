@@ -6,8 +6,17 @@
 
 import axios from 'axios';
 
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && !envUrl.includes('onrender.com')) {
+    return envUrl;
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: getBaseUrl(),
+  timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json',
   },

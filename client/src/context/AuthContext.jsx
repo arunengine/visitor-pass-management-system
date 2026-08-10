@@ -16,21 +16,40 @@ export const AuthProvider = ({ children }) => {
 
   // Fetch current user session on application load (Persists login on refresh)
   useEffect(() => {
+    let isMounted = true;
+
+    // Safety fallback: Ensure isLoading is set to false within 4 seconds max
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }, 4000);
+
     const checkAuthStatus = async () => {
       try {
         const response = await api.get('/v1/auth/me');
-        if (response.data?.success) {
+        if (isMounted && response.data?.success) {
           setUser(response.data.data.user);
         }
       } catch (error) {
-        // Token missing or expired - user is unauthenticated
-        setUser(null);
+        // Token missing, expired, or network unavailable - user is unauthenticated
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        clearTimeout(safetyTimer);
       }
     };
 
     checkAuthStatus();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   // Login Method: Sends credentials to POST /api/v1/auth/login

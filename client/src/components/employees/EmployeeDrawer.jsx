@@ -11,31 +11,31 @@ const EmployeeDrawer = ({ isOpen, onClose, employee }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 animate-fade-in">
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+      <div className="absolute inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-full sm:w-96 sm:max-w-md bg-white shadow-2xl flex flex-col">
           {/* Drawer Header */}
-          <div className="px-6 py-5 bg-slate-900 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-sky-600 rounded-lg text-white font-bold text-sm">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 bg-slate-900 text-white flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0 pr-2">
+              <div className="p-2 sm:p-2.5 bg-sky-600 rounded-lg text-white font-bold text-xs sm:text-sm shrink-0">
                 {employee.employeeCode}
               </div>
-              <div>
-                <h3 className="text-base font-bold leading-tight">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold leading-tight truncate">
                   {employee.firstName} {employee.lastName}
                 </h3>
-                <span className="text-xs text-slate-400">{employee.designation}</span>
+                <span className="text-xs text-slate-400 block truncate">{employee.designation}</span>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Drawer Body */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-6">
             {/* Status Badge */}
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">

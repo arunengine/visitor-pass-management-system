@@ -340,7 +340,7 @@ const AdminDashboard = () => {
               setEmpModalError('');
               setIsAddEmpModalOpen(true);
             }}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Add Employee</span>
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
               setUserModalError('');
               setIsCreateUserModalOpen(true);
             }}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <UserPlus className="w-4 h-4" />
             <span>Create User Account</span>
@@ -390,7 +390,7 @@ const AdminDashboard = () => {
       {adminStats && (
         <div className="space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Live System Overview</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             <Card title="Total Employees" value={adminStats.totalEmployees} icon={Users} />
             <Card title="Total Users" value={adminStats.totalUserAccounts} icon={Shield} />
             <Card title="Total Visitors" value={adminStats.totalVisitors} icon={UserCheck} />
@@ -407,27 +407,27 @@ const AdminDashboard = () => {
       )}
 
       {/* Tab Selector */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto max-w-full whitespace-nowrap">
         <button
           onClick={() => setActiveTab('EMPLOYEES')}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'EMPLOYEES'
               ? 'border-sky-600 text-sky-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 shrink-0" />
           <span>Employees ({empPagination.total})</span>
         </button>
         <button
           onClick={() => setActiveTab('USERS')}
-          className={`py-3 px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'USERS'
               ? 'border-sky-600 text-sky-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="w-4 h-4 shrink-0" />
           <span>User Accounts ({userPagination.total})</span>
         </button>
       </div>
@@ -436,7 +436,7 @@ const AdminDashboard = () => {
       {activeTab === 'EMPLOYEES' && (
         <div className="space-y-6">
           {/* Overview Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card title="Total Employees" value={empPagination.total} icon={Users} />
             <Card
               title="Active Status"
@@ -456,7 +456,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Search & Filters */}
-          <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div className="relative w-full md:w-80">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -471,8 +471,8 @@ const AdminDashboard = () => {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium">
                 <span>Department:</span>
                 <select
                   value={empDeptFilter}
@@ -491,7 +491,7 @@ const AdminDashboard = () => {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+              <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium">
                 <span>Status:</span>
                 <select
                   value={empStatusFilter}
@@ -545,7 +545,7 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <button
                             onClick={() => {
                               setSelectedEmp(emp);
@@ -628,7 +628,7 @@ const AdminDashboard = () => {
       {activeTab === 'USERS' && (
         <div className="space-y-6">
           {/* Overview Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card title="Total User Accounts" value={userPagination.total} icon={Shield} />
             <Card
               title="Admin Accounts"
@@ -648,7 +648,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Search & Filters */}
-          <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div className="relative w-full md:w-80">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -663,8 +663,8 @@ const AdminDashboard = () => {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium">
                 <span>System Role:</span>
                 <select
                   value={userRoleFilter}
@@ -681,7 +681,7 @@ const AdminDashboard = () => {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+              <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium">
                 <span>Status:</span>
                 <select
                   value={userStatusFilter}

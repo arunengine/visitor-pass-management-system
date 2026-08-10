@@ -73,10 +73,12 @@ const ActivityHistory = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span>Filter by Action:</span>
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-gray-500 font-medium w-full sm:w-auto">
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+            <span>Filter by Action:</span>
+          </div>
           <select
             value={actionFilter}
             onChange={(e) => {

@@ -21,12 +21,25 @@ const activityRoutes = require('./routes/activityRoutes');
 
 const app = express();
 
-// Global Middleware Configuration
-app.use(morgan('dev')); // Log HTTP requests to console
+// Configure Allowed Origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true, // Allow cookies to be sent across origins
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl) or if origin is allowed/matches Vercel domain pattern
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
+    credentials: true, // Allow HttpOnly cookies across origins
   })
 );
 app.use(express.json()); // Parse JSON request bodies

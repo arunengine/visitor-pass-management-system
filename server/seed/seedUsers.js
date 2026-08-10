@@ -36,7 +36,8 @@ const seedUsers = [
 const seedDatabase = async () => {
   try {
     // Connect to database
-    await mongoose.connect(process.env.MONGODB_URI);
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/visitor_pass_db';
+    await mongoose.connect(mongoUri);
     console.log('[Seeder]: Connected to MongoDB...');
 
     // Clear existing users

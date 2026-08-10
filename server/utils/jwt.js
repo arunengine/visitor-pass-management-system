@@ -31,7 +31,7 @@ const sendTokenCookie = (res, token) => {
   const cookieOptions = {
     httpOnly: true, // Prevents client-side JavaScript access to prevent XSS attacks
     secure: isProduction, // HTTPS only in production
-    sameSite: isProduction ? 'strict' : 'lax', // CSRF protection
+    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin Vercel to Render cookies
     maxAge: 24 * 60 * 60 * 1000, // 1 day cookie expiration
   };
 

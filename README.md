@@ -189,18 +189,61 @@ npm run dev
 
 ---
 
-## 📦 Deployment Steps
+## 📦 Production Deployment Guide
 
-1. **Build Client Bundle**:
-   ```bash
-   cd client
-   npm run build
-   ```
-2. **Environment Configuration**: Set `NODE_ENV=production`, `MONGO_URI` to MongoDB Atlas cluster URI, and `CLIENT_URL` to production domain.
-3. **Process Manager**: Use PM2 to run the Express backend server:
-   ```bash
-   pm2 start server/server.js --name "visitor-pass-api"
-   ```
+### 1. MongoDB Atlas Setup
+1. Log in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and create a database cluster.
+2. Under **Network Access**, add IP `0.0.0.0/0` to allow connection access from cloud providers (Render).
+3. Under **Database Access**, create a database user with read/write access.
+4. Copy the connection string format: `mongodb+srv://<username>:<password>@cluster.mongodb.net/visitor_pass_db?retryWrites=true&w=majority`
+
+---
+
+### 2. Backend Deployment (Render)
+
+1. Push your repository to GitHub.
+2. Sign in to [Render.com](https://render.com) and click **New + ➔ Web Service**.
+3. Connect your GitHub repository.
+4. Configure Render Web Service settings:
+   - **Name**: `visitor-pass-system-backend`
+   - **Root Directory**: `server`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+5. Add **Environment Variables** in Render Dashboard:
+   - `PORT`: `5000`
+   - `MONGO_URI`: `mongodb+srv://<username>:<password>@cluster.mongodb.net/visitor_pass_db`
+   - `JWT_SECRET`: `supersecretjwtkey_for_visitor_pass_management_2026`
+   - `CLIENT_URL`: `https://visitor-pass-system.vercel.app`
+   - `NODE_ENV`: `production`
+6. Click **Create Web Service**. Save your deployed Render URL (e.g. `https://visitor-pass-system-backend.onrender.com`).
+
+---
+
+### 3. Frontend Deployment (Vercel)
+
+1. Sign in to [Vercel](https://vercel.com) and click **Add New... ➔ Project**.
+2. Import your GitHub repository.
+3. Configure Vercel Project settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `client`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Add **Environment Variables** in Vercel Dashboard:
+   - `VITE_API_URL`: `https://visitor-pass-system-backend.onrender.com/api`
+5. Click **Deploy**. Vercel will build your client application and assign a domain (e.g. `https://visitor-pass-system.vercel.app`).
+6. Update `CLIENT_URL` in your Render backend environment variables to match your final Vercel URL.
+
+---
+
+## 🛠️ Production Troubleshooting Checklist
+
+| Issue | Cause | Resolution |
+| :--- | :--- | :--- |
+| **CORS Blocked Error** | `CLIENT_URL` mismatch | Set `CLIENT_URL` on Render to match your exact Vercel URL (including `https://`). |
+| **Cookies Not Saving** | Missing `sameSite: 'none'` or `secure: true` | Ensure `NODE_ENV=production` is set so JWT cookies use `sameSite: 'none'` and `secure: true`. |
+| **404 Page Not Found on Refresh** | SPA routing broken | Verify `client/vercel.json` rewrites all routes `/(.*)` to `/index.html`. |
+| **MongoDB Connection Failure** | IP whitelist blocking Render | In MongoDB Atlas Network Access, add `0.0.0.0/0`. |
 
 ---
 

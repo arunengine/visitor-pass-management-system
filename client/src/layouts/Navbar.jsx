@@ -5,11 +5,11 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogOut } from 'lucide-react';
+import { ShieldCheck, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES } from '../constants';
 
-const Navbar = () => {
+const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -19,22 +19,30 @@ const Navbar = () => {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-      {/* Brand Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-sky-100 text-sky-600 rounded-lg">
-          <ShieldCheck className="w-6 h-6" />
+    <header className="h-16 bg-white border-b border-gray-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm max-w-full">
+      {/* Mobile Menu Toggle & Brand Header */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          onClick={onToggleMobileMenu}
+          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg md:hidden transition-colors focus:outline-none"
+          aria-label="Toggle navigation menu"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+
+        <div className="p-2 bg-sky-100 text-sky-600 rounded-lg shrink-0">
+          <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
-        <div>
-          <h1 className="text-base font-bold text-gray-800 leading-tight">
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-base font-bold text-gray-800 leading-tight truncate">
             Visitor Pass Management
           </h1>
-          <span className="text-xs text-gray-400">Enterprise Access Portal</span>
+          <span className="text-[10px] sm:text-xs text-gray-400 block truncate">Enterprise Access Portal</span>
         </div>
       </div>
 
       {/* Logged in User Profile & Actions */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <div className="text-right hidden sm:block">
           <p className="text-sm font-semibold text-gray-800">
             {user?.name || 'Authenticated User'}

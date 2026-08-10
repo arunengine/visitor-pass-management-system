@@ -6,11 +6,11 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, FileText, History } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, FileText, History, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES, ROLES } from '../constants';
 
-const Sidebar = () => {
+const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const { user } = useAuth();
   const role = user?.role;
 
@@ -53,36 +53,75 @@ const Sidebar = () => {
     item.roles.includes(role)
   );
 
-  return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
-      <div className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        Navigation Menu
-      </div>
-      <nav className="flex-1 px-3 space-y-1">
-        {permittedItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-sky-600 text-white font-semibold'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`
-              }
+  const sidebarContent = (
+    <div className="h-full flex flex-col justify-between">
+      <div>
+        <div className="p-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <span>Navigation Menu</span>
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden text-slate-400 hover:text-white p-1 rounded-lg"
+              aria-label="Close menu"
             >
-              <Icon className="w-4 h-4" />
-              <span>{item.name}</span>
-            </NavLink>
-          );
-        })}
-      </nav>
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        <nav className="px-3 space-y-1">
+          {permittedItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onCloseMobile}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-sky-600 text-white font-semibold'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{item.name}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
+
       <div className="p-4 border-t border-slate-800 text-xs text-slate-400">
         Active Role: <span className="text-sky-400 font-semibold">{role || 'GUEST'}</span>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs md:hidden"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      {/* Mobile Drawer (Visible when isMobileOpen = true) */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop Sidebar (Always visible on md+ screens) */}
+      <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col shrink-0 min-h-[calc(100vh-4rem)]">
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 

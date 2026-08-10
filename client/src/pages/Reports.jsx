@@ -175,7 +175,7 @@ const Reports = () => {
           variant="primary"
           onClick={handleExportCSV}
           disabled={visitors.length === 0}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Download className="w-4 h-4" />
           <span>Export CSV</span>
@@ -183,9 +183,9 @@ const Reports = () => {
       </div>
 
       {/* Preset Controls & Date Range Picker */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Preset Buttons */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <button
             onClick={() => {
               setRangePreset('TODAY');
@@ -242,23 +242,23 @@ const Reports = () => {
 
         {/* Custom Range Inputs */}
         {rangePreset === 'CUSTOM' && (
-          <div className="flex items-center gap-3 text-xs text-gray-600">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 text-xs text-gray-600 w-full md:w-auto">
+            <div className="flex items-center justify-between sm:justify-start gap-1.5">
               <span>Start:</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs"
+                className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs bg-white"
               />
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between sm:justify-start gap-1.5">
               <span>End:</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs"
+                className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs bg-white"
               />
             </div>
           </div>
@@ -269,7 +269,7 @@ const Reports = () => {
       {isSummaryLoading ? (
         <Loader message="Aggregating report analytics..." />
       ) : summaryData?.stats ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card title="Total Visitors" value={summaryData.stats.totalVisitors} icon={Users} />
           <Card title="Approved Visits" value={summaryData.stats.approvedCount} icon={CheckCircle2} />
           <Card title="Rejected Visits" value={summaryData.stats.rejectedCount} icon={XCircle} />
