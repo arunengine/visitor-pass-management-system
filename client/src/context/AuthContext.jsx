@@ -58,6 +58,10 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/v1/auth/login', { email, password });
       if (response.data?.success) {
         const authenticatedUser = response.data.data.user;
+        const token = response.data.data.token;
+        if (token) {
+          localStorage.setItem('token', token);
+        }
         setUser(authenticatedUser);
         return { success: true, user: authenticatedUser };
       }
@@ -75,6 +79,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('[Logout Error]:', error.message);
     } finally {
+      localStorage.removeItem('token');
       setUser(null);
     }
   };
