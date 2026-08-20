@@ -11,6 +11,7 @@ export const ROUTES = {
   EMPLOYEE_DASHBOARD: '/employee/dashboard',
   REPORTS: '/reports',
   ACTIVITY_HISTORY: '/activity-history',
+  VISITOR_ALLOCATION: '/visitor-allocation',
   UNAUTHORIZED: '/unauthorized',
   NOT_FOUND: '*',
 };

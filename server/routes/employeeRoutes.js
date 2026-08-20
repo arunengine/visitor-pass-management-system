@@ -13,6 +13,7 @@ const {
   updateEmployee,
   updateEmployeeStatus,
   deleteEmployee,
+  getEmployeeCapacity,
 } = require('../controllers/employeeController');
 const {
   createEmployeeValidation,
@@ -22,8 +23,13 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const { ROLES } = require('../constants');
 
-// Apply protection & Admin authorization to all employee routes
+// Apply protection to all employee routes
 router.use(protect);
+
+// Receptionist & Admin route for capacity check
+router.get('/capacity', authorize(ROLES.RECEPTIONIST, ROLES.ADMIN), getEmployeeCapacity);
+
+// Restrict remaining employee management routes to Admin
 router.use(authorize(ROLES.ADMIN));
 
 router.get('/', getEmployees);

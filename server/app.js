@@ -18,8 +18,15 @@ const visitorRoutes = require('./routes/visitorRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const { processExpiredVisitors } = require('./services/visitorService');
 
 const app = express();
+
+// Background job: Automatically check out expired visitors every 30 seconds
+setInterval(() => {
+  processExpiredVisitors();
+}, 30 * 1000);
 
 // Configure Allowed Origins for CORS
 const allowedOrigins = [
@@ -54,6 +61,7 @@ app.use('/api/v1/visitors', visitorRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/activities', activityRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 // Health Check Endpoint (For testing server status)
 app.get('/api/health', (req, res) => {

@@ -25,7 +25,6 @@ const createVisitorValidation = [
   body('company').trim().notEmpty().withMessage('Company name is required'),
   body('idProofType').trim().notEmpty().withMessage('ID Proof type is required'),
   body('idProofNumber').trim().notEmpty().withMessage('ID Proof number is required'),
-  body('employeeId').isMongoId().withMessage('Valid host Employee ID is required'),
   body('purposeOfVisit').trim().notEmpty().withMessage('Purpose of visit is required'),
   body('visitDate').notEmpty().withMessage('Visit date is required').isISO8601().withMessage('Visit date must be a valid date'),
   body('expectedArrivalTime').trim().notEmpty().withMessage('Expected arrival time is required'),

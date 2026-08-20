@@ -22,6 +22,9 @@ const {
   getTodayCheckOuts,
   checkInVisitor,
   checkOutVisitor,
+  getUnallocatedVisitors,
+  allocateVisitor,
+  allocateDynamic,
 } = require('../controllers/visitorController');
 const {
   createVisitorValidation,
@@ -40,6 +43,11 @@ router.get('/my-approved', authorize(ROLES.EMPLOYEE, ROLES.ADMIN, ROLES.RECEPTIO
 router.get('/my-rejected', authorize(ROLES.EMPLOYEE, ROLES.ADMIN, ROLES.RECEPTIONIST), getMyRejected);
 router.patch('/:id/approve', authorize(ROLES.EMPLOYEE, ROLES.ADMIN), approveVisitor);
 router.patch('/:id/reject', authorize(ROLES.EMPLOYEE, ROLES.ADMIN), rejectVisitor);
+
+// Receptionist & Admin routes for Allocation Workflow
+router.get('/unallocated', authorize(ROLES.RECEPTIONIST, ROLES.ADMIN), getUnallocatedVisitors);
+router.patch('/:id/allocate', authorize(ROLES.RECEPTIONIST, ROLES.ADMIN), allocateVisitor);
+router.post('/allocate-dynamic', authorize(ROLES.RECEPTIONIST, ROLES.ADMIN), allocateDynamic);
 
 // Receptionist & Admin routes for Check-In & Check-Out Operations
 router.get('/active-inside', authorize(ROLES.RECEPTIONIST, ROLES.ADMIN), getActiveVisitors);

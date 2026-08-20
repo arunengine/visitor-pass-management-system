@@ -56,7 +56,7 @@ const visitorSchema = new mongoose.Schema(
     employee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Employee',
-      required: [true, 'Host employee reference is required'],
+      default: null,
     },
     purposeOfVisit: {
       type: String,
@@ -90,6 +90,18 @@ const visitorSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: '',
+    },
+    meetingStartTime: {
+      type: Date,
+      default: null,
+    },
+    meetingDuration: {
+      type: Number,
+      default: 30,
+    },
+    meetingExpiryTime: {
+      type: Date,
+      default: null,
     },
     checkInTime: {
       type: Date,

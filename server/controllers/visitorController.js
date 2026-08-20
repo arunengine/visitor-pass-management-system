@@ -271,6 +271,67 @@ const getTodayCheckOuts = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get unallocated pending visitors
+ * @route   GET /api/v1/visitors/unallocated
+ * @access  Private (Receptionist, Admin)
+ */
+const getUnallocatedVisitors = async (req, res, next) => {
+  try {
+    const result = await visitorService.getUnallocatedVisitors(req.query);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Allocate a visitor to an employee
+ * @route   PATCH /api/v1/visitors/:id/allocate
+ * @access  Private (Receptionist, Admin)
+ */
+const allocateVisitor = async (req, res, next) => {
+  try {
+    const { employeeId } = req.body;
+    if (!employeeId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: 'Employee ID is required for allocation',
+      });
+    }
+
+    const visitor = await visitorService.allocateVisitor(req.params.id, employeeId, req.user);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Visitor allocated to host employee successfully',
+      data: { visitor },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Dynamically allocate pending visitors to available employees
+ * @route   POST /api/v1/visitors/allocate-dynamic
+ * @access  Private (Receptionist, Admin)
+ */
+const allocateDynamic = async (req, res, next) => {
+  try {
+    const result = await visitorService.allocateDynamic(req.user);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getVisitors,
   getVisitorById,
@@ -287,4 +348,7 @@ module.exports = {
   getActiveVisitors,
   getTodayCheckIns,
   getTodayCheckOuts,
+  getUnallocatedVisitors,
+  allocateVisitor,
+  allocateDynamic,
 };

@@ -79,3 +79,18 @@ export const checkOutVisitor = async (id) => {
   const response = await api.patch(`/v1/visitors/${id}/check-out`);
   return response.data;
 };
+
+export const getUnallocatedVisitors = async (params = {}) => {
+  const response = await api.get('/v1/visitors/unallocated', { params });
+  return response.data;
+};
+
+export const allocateVisitor = async (id, employeeId) => {
+  const response = await api.patch(`/v1/visitors/${id}/allocate`, { employeeId });
+  return response.data;
+};
+
+export const allocateDynamic = async () => {
+  const response = await api.post('/v1/visitors/allocate-dynamic');
+  return response.data;
+};

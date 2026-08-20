@@ -160,6 +160,56 @@ const softDeleteEmployee = async (id) => {
   return employee;
 };
 
+/**
+ * Get all employees with their current active visitor count, max capacity, and remaining availability.
+ */
+const getEmployeeCapacityList = async (query = {}) => {
+  const Visitor = require('../models/visitorModel');
+  const activeStatuses = ['PENDING', 'APPROVED', 'CHECKED_IN'];
+
+  const filter = { isDeleted: false };
+  if (query.department && query.department !== 'ALL') {
+    filter.department = query.department;
+  }
+  if (query.status && query.status !== 'ALL') {
+    filter.status = query.status;
+  }
+
+  const employees = await Employee.find(filter).sort({ firstName: 1 });
+
+  const employeeCapacityList = await Promise.all(
+    employees.map(async (emp) => {
+      const currentCount = await Visitor.countDocuments({
+        employee: emp._id,
+        status: { $in: activeStatuses },
+      });
+
+      const maxCapacity = emp.maxVisitorCapacity || 1;
+      const remainingCapacity = Math.max(0, maxCapacity - currentCount);
+      const isAvailable = emp.status === 'Active' && remainingCapacity > 0;
+
+      return {
+        _id: emp._id,
+        employeeCode: emp.employeeCode,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        fullName: `${emp.firstName} ${emp.lastName}`,
+        email: emp.email,
+        phone: emp.phone,
+        department: emp.department,
+        designation: emp.designation,
+        status: emp.status,
+        maxVisitorCapacity: maxCapacity,
+        currentVisitors: currentCount,
+        remainingCapacity,
+        isAvailable,
+      };
+    })
+  );
+
+  return employeeCapacityList;
+};
+
 module.exports = {
   getAllEmployees,
   getEmployeeById,
@@ -167,4 +217,5 @@ module.exports = {
   updateEmployee,
   toggleEmployeeStatus,
   softDeleteEmployee,
+  getEmployeeCapacityList,
 };

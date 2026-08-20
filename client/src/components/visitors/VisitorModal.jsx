@@ -3,7 +3,7 @@
  * Purpose: Form modal for registering new visitors or editing existing visitor details.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,6 @@ import { z } from 'zod';
 import Modal from '../modal/Modal';
 import Input from '../inputs/Input';
 import Button from '../buttons/Button';
-import { getEmployees } from '../../services/employeeService';
 
 // Zod Validation Schema for Visitor Registration
 const visitorSchema = z.object({
@@ -22,7 +21,6 @@ const visitorSchema = z.object({
   address: z.string().optional(),
   idProofType: z.enum(['Aadhaar', 'PAN Card', 'Driving License', 'Passport', 'Voter ID', 'Other']),
   idProofNumber: z.string().min(1, 'ID Proof number is required'),
-  employeeId: z.string().min(1, 'Host Employee selection is required'),
   purposeOfVisit: z.string().min(1, 'Purpose of visit is required'),
   visitDate: z.string().min(1, 'Visit date is required'),
   expectedArrivalTime: z.string().min(1, 'Expected arrival time is required'),
@@ -31,8 +29,6 @@ const visitorSchema = z.object({
 
 const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, error }) => {
   const isEditMode = Boolean(initialData);
-  const [activeEmployees, setActiveEmployees] = useState([]);
-  const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
   const {
     register,
@@ -50,7 +46,6 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
       address: '',
       idProofType: 'Aadhaar',
       idProofNumber: '',
-      employeeId: '',
       purposeOfVisit: '',
       visitDate: new Date().toISOString().split('T')[0],
       expectedArrivalTime: '10:00',
@@ -58,25 +53,9 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
     },
   });
 
-  // Fetch active host employees when modal opens
+  // Reset form values when modal opens or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const fetchActiveEmployees = async () => {
-        setIsLoadingEmployees(true);
-        try {
-          const res = await getEmployees({ status: 'Active', limit: 100 });
-          if (res?.success) {
-            setActiveEmployees(res.data.employees);
-          }
-        } catch (err) {
-          console.error('[Fetch Employees Error]:', err.message);
-        } finally {
-          setIsLoadingEmployees(false);
-        }
-      };
-
-      fetchActiveEmployees();
-
       if (initialData) {
         reset({
           fullName: initialData.fullName || '',
@@ -86,7 +65,6 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
           address: initialData.address || '',
           idProofType: initialData.idProofType || 'Aadhaar',
           idProofNumber: initialData.idProofNumber || '',
-          employeeId: initialData.employee?._id || initialData.employee || '',
           purposeOfVisit: initialData.purposeOfVisit || '',
           visitDate: initialData.visitDate
             ? new Date(initialData.visitDate).toISOString().split('T')[0]
@@ -103,7 +81,6 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
           address: '',
           idProofType: 'Aadhaar',
           idProofNumber: '',
-          employeeId: '',
           purposeOfVisit: '',
           visitDate: new Date().toISOString().split('T')[0],
           expectedArrivalTime: '10:00',
@@ -117,7 +94,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditMode ? `Edit Visitor (${initialData?.visitorId})` : 'Register New Visitor'}
+      title={isEditMode ? 'Edit Visitor Details' : 'Register New Visitor'}
     >
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
@@ -161,29 +138,8 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
           />
         </div>
 
-        {/* Host Employee & ID Proof */}
+        {/* ID Proof & Purpose */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1 w-full">
-            <label className="text-sm font-medium text-gray-700">
-              Host Employee <span className="text-red-500">*</span>
-            </label>
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-              {...register('employeeId')}
-              disabled={isLoadingEmployees}
-            >
-              <option value="">-- Select Host Employee --</option>
-              {activeEmployees.map((emp) => (
-                <option key={emp._id} value={emp._id}>
-                  {emp.employeeCode} - {emp.firstName} {emp.lastName} ({emp.department})
-                </option>
-              ))}
-            </select>
-            {errors.employeeId && (
-              <span className="text-xs text-red-500">{errors.employeeId.message}</span>
-            )}
-          </div>
-
           <div className="flex flex-col gap-1 w-full">
             <label className="text-sm font-medium text-gray-700">
               ID Proof Type <span className="text-red-500">*</span>
@@ -200,9 +156,6 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, isSubmitting, er
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="ID Proof Number"
             placeholder="XXXX-XXXX-XXXX"

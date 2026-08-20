@@ -51,6 +51,11 @@ const employeeSchema = new mongoose.Schema(
       enum: ['Active', 'Inactive'],
       default: 'Active',
     },
+    maxVisitorCapacity: {
+      type: Number,
+      default: 1,
+      min: [1, 'Maximum visitor capacity must be at least 1'],
+    },
     isDeleted: {
       type: Boolean,
       default: false, // Soft delete flag

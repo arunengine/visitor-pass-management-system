@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, FileText, History, X } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, UserPlus, FileText, History, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES, ROLES } from '../constants';
 
@@ -26,6 +26,12 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       name: 'Reception Portal',
       path: ROUTES.RECEPTION_DASHBOARD,
       icon: UserCheck,
+      roles: [ROLES.ADMIN, ROLES.RECEPTIONIST],
+    },
+    {
+      name: 'Visitor Allocation',
+      path: ROUTES.VISITOR_ALLOCATION,
+      icon: UserPlus,
       roles: [ROLES.ADMIN, ROLES.RECEPTIONIST],
     },
     {

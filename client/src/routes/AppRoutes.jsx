@@ -21,6 +21,7 @@ import ReceptionDashboard from '../pages/ReceptionDashboard';
 import EmployeeDashboard from '../pages/EmployeeDashboard';
 import Reports from '../pages/Reports';
 import ActivityHistory from '../pages/ActivityHistory';
+import VisitorAllocation from '../pages/VisitorAllocation';
 import Unauthorized from '../pages/Unauthorized';
 import NotFound from '../pages/NotFound';
 
@@ -45,6 +46,7 @@ const AppRoutes = () => {
           {/* Receptionist & Admin Routes */}
           <Route element={<RoleRoute allowedRoles={[ROLES.RECEPTIONIST, ROLES.ADMIN]} />}>
             <Route path={ROUTES.RECEPTION_DASHBOARD} element={<ReceptionDashboard />} />
+            <Route path={ROUTES.VISITOR_ALLOCATION} element={<VisitorAllocation />} />
             <Route path={ROUTES.REPORTS} element={<Reports />} />
             <Route path={ROUTES.ACTIVITY_HISTORY} element={<ActivityHistory />} />
           </Route>

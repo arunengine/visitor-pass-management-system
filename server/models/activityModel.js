@@ -19,6 +19,7 @@ const activitySchema = new mongoose.Schema(
         'VISITOR_REJECTED',
         'VISITOR_CHECKED_IN',
         'VISITOR_CHECKED_OUT',
+        'VISITOR_ALLOCATED',
       ],
     },
     visitor: {
@@ -29,7 +30,7 @@ const activitySchema = new mongoose.Schema(
     performedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null,
     },
     role: {
       type: String,

@@ -53,12 +53,23 @@ const VisitorDrawer = ({ isOpen, onClose, visitor }) => {
                     ? 'bg-amber-100 text-amber-800'
                     : visitor.status === 'CANCELLED'
                     ? 'bg-red-100 text-red-700'
+                    : visitor.status === 'CHECKED_OUT'
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : visitor.status === 'CHECKED_IN'
+                    ? 'bg-purple-100 text-purple-700'
                     : 'bg-emerald-100 text-emerald-700'
                 }`}
               >
                 {visitor.status}
               </span>
             </div>
+
+            {/* Auto Checkout Alert */}
+            {visitor.status === 'CHECKED_OUT' && visitor.meetingExpiryTime && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-medium">
+                ⚡ Visitor automatically checked out after meeting duration expired.
+              </div>
+            )}
 
             {/* Visitor Details */}
             <div className="space-y-4">
@@ -144,6 +155,40 @@ const VisitorDrawer = ({ isOpen, onClose, visitor }) => {
                   <p className="font-medium">{visitor.expectedArrivalTime}</p>
                 </div>
               </div>
+
+              {visitor.meetingStartTime && (
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Clock className="w-4 h-4 text-sky-600 shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Meeting Start Time</p>
+                    <p className="font-medium">
+                      {new Date(visitor.meetingStartTime).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {visitor.meetingDuration && (
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Clock className="w-4 h-4 text-sky-600 shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Meeting Duration</p>
+                    <p className="font-medium">{visitor.meetingDuration} minutes</p>
+                  </div>
+                </div>
+              )}
+
+              {visitor.meetingExpiryTime && (
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Expected Checkout / Expiry Time</p>
+                    <p className="font-medium text-amber-700">
+                      {new Date(visitor.meetingExpiryTime).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {visitor.checkInTime && (
                 <div className="flex items-center gap-3 text-sm text-gray-700">

@@ -34,3 +34,8 @@ export const deleteEmployee = async (id) => {
   const response = await api.delete(`/v1/employees/${id}`);
   return response.data;
 };
+
+export const getEmployeeCapacity = async (params = {}) => {
+  const response = await api.get('/v1/employees/capacity', { params });
+  return response.data;
+};

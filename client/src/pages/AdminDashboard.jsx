@@ -26,6 +26,7 @@ import {
   Clock,
   LogIn,
   LogOut,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 
 import Card from '../components/cards/Card';
@@ -61,6 +62,7 @@ import {
   resetPassword,
 } from '../services/userService';
 
+import { getSettings, updateSettings } from '../services/settingsService';
 import { getAdminDashboardStats } from '../services/dashboardService';
 
 const AdminDashboard = () => {
@@ -106,6 +108,11 @@ const AdminDashboard = () => {
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [isUserSubmitting, setIsUserSubmitting] = useState(false);
   const [userModalError, setUserModalError] = useState('');
+
+  // --- SETTINGS STATE ---
+  const [meetingDuration, setMeetingDuration] = useState(30);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(false);
+  const [isSettingsSaving, setIsSettingsSaving] = useState(false);
 
   // Toast Notification
   const [toast, setToast] = useState(null);
@@ -153,19 +160,51 @@ const AdminDashboard = () => {
         setUserPagination(res.data.pagination);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to fetch users', 'error');
+      showToast(err.response?.data?.message || 'Failed to fetch user accounts', 'error');
     } finally {
       setIsUserLoading(false);
     }
   }, [userPage, userSearch, userRoleFilter, userStatusFilter]);
 
+  // --- FETCH SETTINGS ---
+  const fetchSettingsData = useCallback(async () => {
+    setIsSettingsLoading(true);
+    try {
+      const res = await getSettings();
+      if (res?.success && res?.data?.settings) {
+        setMeetingDuration(res.data.settings.defaultMeetingDuration || 30);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to fetch settings', 'error');
+    } finally {
+      setIsSettingsLoading(false);
+    }
+  }, []);
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    setIsSettingsSaving(true);
+    try {
+      const res = await updateSettings({ defaultMeetingDuration: meetingDuration });
+      if (res?.success) {
+        showToast('Default meeting duration updated successfully!');
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update settings', 'error');
+    } finally {
+      setIsSettingsSaving(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'EMPLOYEES') {
       fetchEmployeesData();
-    } else {
+    } else if (activeTab === 'USERS') {
       fetchUsersData();
+    } else if (activeTab === 'SETTINGS') {
+      fetchSettingsData();
     }
-  }, [activeTab, fetchEmployeesData, fetchUsersData]);
+  }, [activeTab, fetchEmployeesData, fetchUsersData, fetchSettingsData]);
 
   // Fetch Admin Live Stats
   const fetchAdminStats = useCallback(async () => {
@@ -429,6 +468,17 @@ const AdminDashboard = () => {
         >
           <Shield className="w-4 h-4 shrink-0" />
           <span>User Accounts ({userPagination.total})</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('SETTINGS')}
+          className={`py-3 px-4 sm:px-6 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'SETTINGS'
+              ? 'border-sky-600 text-sky-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <SettingsIcon className="w-4 h-4 shrink-0" />
+          <span>Meeting Settings</span>
         </button>
       </div>
 
@@ -838,6 +888,54 @@ const AdminDashboard = () => {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* --- TAB 3: MEETING SETTINGS MANAGEMENT --- */}
+      {activeTab === 'SETTINGS' && (
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6 max-w-2xl">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <SettingsIcon className="w-5 h-5 text-sky-600" />
+              Default Meeting Duration Configuration
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Set the default meeting duration in minutes. When a host employee approves a visitor request, the meeting expiry time will be calculated automatically based on this value.
+            </p>
+          </div>
+
+          {isSettingsLoading ? (
+            <Loader message="Loading settings configuration..." />
+          ) : (
+            <form onSubmit={handleSaveSettings} className="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Default Meeting Duration (Minutes)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    required
+                    value={meetingDuration}
+                    onChange={(e) => setMeetingDuration(e.target.value)}
+                    className="w-48 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold"
+                  />
+                  <span className="text-sm font-medium text-gray-600">minutes</span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  Example: 30 minutes. Once expired, active visitors will be automatically checked out by the system.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <Button type="submit" variant="primary" disabled={isSettingsSaving}>
+                  {isSettingsSaving ? 'Saving Settings...' : 'Save Configuration'}
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       )}
 

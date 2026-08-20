@@ -7,11 +7,78 @@
 const Visitor = require('../models/visitorModel');
 const Employee = require('../models/employeeModel');
 const logActivity = require('../utils/activityLogger');
+const settingsService = require('./settingsService');
+
+/**
+ * Process all active visitors across the system that have passed their meetingExpiryTime.
+ * Idempotent: safe to run repeatedly.
+ */
+const processExpiredVisitors = async () => {
+  try {
+    const now = new Date();
+    const expiredVisitors = await Visitor.find({
+      status: { $in: ['APPROVED', 'CHECKED_IN'] },
+      meetingExpiryTime: { $ne: null, $lte: now },
+    });
+
+    for (const visitor of expiredVisitors) {
+      if (visitor.status === 'CHECKED_OUT') continue;
+
+      visitor.status = 'CHECKED_OUT';
+      if (!visitor.checkOutTime) {
+        visitor.checkOutTime = visitor.meetingExpiryTime || now;
+      }
+      await visitor.save();
+
+      await logActivity({
+        action: 'VISITOR_CHECKED_OUT',
+        visitorId: visitor._id,
+        userId: visitor.approvedBy || visitor.createdBy,
+        role: 'SYSTEM',
+        remarks: 'Visitor automatically checked out after meeting duration expired.',
+      });
+    }
+  } catch (error) {
+    console.error('[Process Expired Visitors Error]:', error.message);
+  }
+};
+
+/**
+ * Check and process automatic checkout for a single visitor if expired.
+ */
+const checkAndProcessExpiredVisitor = async (visitor) => {
+  if (!visitor) return false;
+  const activeStatuses = ['APPROVED', 'CHECKED_IN'];
+  if (!activeStatuses.includes(visitor.status)) return false;
+  if (!visitor.meetingExpiryTime) return false;
+
+  const now = new Date();
+  if (now >= new Date(visitor.meetingExpiryTime)) {
+    visitor.status = 'CHECKED_OUT';
+    if (!visitor.checkOutTime) {
+      visitor.checkOutTime = visitor.meetingExpiryTime || now;
+    }
+    await visitor.save();
+
+    await logActivity({
+      action: 'VISITOR_CHECKED_OUT',
+      visitorId: visitor._id,
+      userId: visitor.approvedBy || visitor.createdBy,
+      role: 'SYSTEM',
+      remarks: 'Visitor automatically checked out after meeting duration expired.',
+    });
+
+    return true;
+  }
+  return false;
+};
 
 /**
  * Get all visitors with search, filter, and pagination.
  */
 const getAllVisitors = async (query) => {
+  await processExpiredVisitors();
+
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
@@ -74,7 +141,7 @@ const getAllVisitors = async (query) => {
  * Get single visitor by ID.
  */
 const getVisitorById = async (id) => {
-  const visitor = await Visitor.findById(id)
+  let visitor = await Visitor.findById(id)
     .populate('employee', 'employeeCode firstName lastName department designation status')
     .populate('createdBy', 'name email role');
   if (!visitor) {
@@ -82,6 +149,14 @@ const getVisitorById = async (id) => {
     error.statusCode = 404;
     throw error;
   }
+
+  const wasUpdated = await checkAndProcessExpiredVisitor(visitor);
+  if (wasUpdated) {
+    visitor = await Visitor.findById(id)
+      .populate('employee', 'employeeCode firstName lastName department designation status')
+      .populate('createdBy', 'name email role');
+  }
+
   return visitor;
 };
 
@@ -89,6 +164,8 @@ const getVisitorById = async (id) => {
  * Register a new visitor & enforce Business Rules 1 - 5.
  */
 const createVisitor = async (visitorData, userId) => {
+  await processExpiredVisitors();
+
   const {
     fullName,
     phone,
@@ -105,29 +182,9 @@ const createVisitor = async (visitorData, userId) => {
     remarks,
   } = visitorData;
 
-  // --- Rule 5: Inactive Employees cannot receive visitors ---
-  const hostEmployee = await Employee.findOne({ _id: employeeId, isDeleted: false });
-  if (!hostEmployee) {
-    const error = new Error('Selected host employee not found');
-    error.statusCode = 404;
-    throw error;
-  }
-  if (hostEmployee.status === 'Inactive') {
-    const error = new Error('Selected host employee is Inactive and cannot receive visitors');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // --- Rule 5 (Pending Limit): Max 3 pending requests awaiting approval for an employee ---
-  const pendingCount = await Visitor.countDocuments({
-    employee: hostEmployee._id,
-    status: 'PENDING',
-  });
-  if (pendingCount >= 3) {
-    const error = new Error(`Host employee ${hostEmployee.firstName} ${hostEmployee.lastName} already has 3 pending visitor requests awaiting approval`);
-    error.statusCode = 400;
-    throw error;
-  }
+  // Receptionist Registration: Visitors are registered without host employee assignment
+  // Host employee allocation must take place on the Visitor Allocation page.
+  const hostEmployeeId = null;
 
   // Parse & Validate Dates
   const inputDate = new Date(visitDate);
@@ -203,7 +260,7 @@ const createVisitor = async (visitorData, userId) => {
     photo,
     idProofType,
     idProofNumber,
-    employee: hostEmployee._id,
+    employee: hostEmployeeId,
     purposeOfVisit,
     visitDate: inputDateOnly,
     expectedArrivalTime,
@@ -311,6 +368,8 @@ const cancelVisitor = async (id) => {
  * Get visitor requests assigned to the logged-in employee filtered by status (PENDING, APPROVED, REJECTED).
  */
 const getMyVisitorRequests = async (user, status, query) => {
+  await processExpiredVisitors();
+
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
@@ -391,9 +450,19 @@ const approveVisitorRequest = async (id, user, remarks = '') => {
     throw error;
   }
 
+  // Fetch configured default meeting duration from Settings
+  const settings = await settingsService.getSettings();
+  const duration = settings.defaultMeetingDuration || 30;
+
+  const now = new Date();
+  const expiryTime = new Date(now.getTime() + duration * 60 * 1000);
+
   visitor.status = 'APPROVED';
   visitor.approvedBy = user.id;
-  visitor.approvedAt = new Date();
+  visitor.approvedAt = now;
+  visitor.meetingStartTime = now;
+  visitor.meetingDuration = duration;
+  visitor.meetingExpiryTime = expiryTime;
   if (remarks) visitor.approvalRemarks = remarks;
 
   await visitor.save();
@@ -476,6 +545,15 @@ const checkInVisitor = async (id, userId) => {
     throw error;
   }
 
+  // Verify if meeting duration has expired
+  await checkAndProcessExpiredVisitor(visitor);
+
+  if (visitor.status === 'CHECKED_OUT') {
+    const error = new Error('Meeting duration has expired. Visitor has been automatically checked out.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   // Rule 7: Already checked-in visitors cannot check in again
   if (visitor.status === 'CHECKED_IN') {
     const error = new Error('Visitor is already checked in');
@@ -536,6 +614,12 @@ const checkOutVisitor = async (id, userId) => {
     throw error;
   }
 
+  await checkAndProcessExpiredVisitor(visitor);
+
+  if (visitor.status === 'CHECKED_OUT') {
+    return visitor;
+  }
+
   if (visitor.status !== 'CHECKED_IN') {
     const error = new Error(`Only currently checked-in visitors can be checked out. Current status: ${visitor.status}`);
     error.statusCode = 400;
@@ -577,6 +661,8 @@ const checkOutVisitor = async (id, userId) => {
  * Enforces Rule 10 (Cancelled visitors never appear).
  */
 const getActiveVisitorsInside = async (query) => {
+  await processExpiredVisitors();
+
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
@@ -620,6 +706,8 @@ const getActiveVisitorsInside = async (query) => {
  * Get visitors checked in today.
  */
 const getTodayCheckIns = async (query) => {
+  await processExpiredVisitors();
+
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
@@ -669,6 +757,8 @@ const getTodayCheckIns = async (query) => {
  * Get visitors checked out today.
  */
 const getTodayCheckOuts = async (query) => {
+  await processExpiredVisitors();
+
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const skip = (page - 1) * limit;
@@ -714,6 +804,207 @@ const getTodayCheckOuts = async (query) => {
   };
 };
 
+/**
+ * Get pending visitors that have not been allocated to any employee (employee === null).
+ */
+const getUnallocatedVisitors = async (query = {}) => {
+  await processExpiredVisitors();
+
+  const page = parseInt(query.page, 10) || 1;
+  const limit = parseInt(query.limit, 10) || 10;
+  const skip = (page - 1) * limit;
+
+  const filter = {
+    employee: null,
+    status: 'PENDING',
+  };
+
+  if (query.search) {
+    const searchRegex = new RegExp(query.search.trim(), 'i');
+    filter.$or = [
+      { fullName: searchRegex },
+      { phone: searchRegex },
+      { visitorId: searchRegex },
+      { company: searchRegex },
+    ];
+  }
+
+  const [visitors, total] = await Promise.all([
+    Visitor.find(filter)
+      .populate('createdBy', 'name email role')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Visitor.countDocuments(filter),
+  ]);
+
+  const totalPages = Math.ceil(total / limit) || 1;
+
+  return {
+    visitors,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+/**
+ * Allocate an unallocated pending visitor to an eligible employee.
+ */
+const allocateVisitor = async (visitorId, employeeId, user) => {
+  const visitor = await Visitor.findById(visitorId);
+  if (!visitor) {
+    const error = new Error('Visitor record not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (visitor.status !== 'PENDING') {
+    const error = new Error(`Cannot allocate a visitor with status '${visitor.status}'. Only PENDING visitors can be allocated.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (visitor.employee) {
+    const error = new Error('Visitor is already allocated to an employee');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const hostEmployee = await Employee.findOne({ _id: employeeId, isDeleted: false });
+  if (!hostEmployee) {
+    const error = new Error('Selected employee not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (hostEmployee.status === 'Inactive') {
+    const error = new Error(`Employee ${hostEmployee.firstName} ${hostEmployee.lastName} is Inactive and cannot receive visitors`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Check capacity limit
+  const activeStatuses = ['PENDING', 'APPROVED', 'CHECKED_IN'];
+  const currentCount = await Visitor.countDocuments({
+    employee: hostEmployee._id,
+    status: { $in: activeStatuses },
+  });
+
+  const maxCapacity = hostEmployee.maxVisitorCapacity || 1;
+  if (currentCount >= maxCapacity) {
+    const error = new Error(`Employee ${hostEmployee.firstName} ${hostEmployee.lastName} has reached maximum visitor capacity (${maxCapacity})`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  visitor.employee = hostEmployee._id;
+  await visitor.save();
+
+  await logActivity({
+    action: 'VISITOR_ALLOCATED',
+    visitorId: visitor._id,
+    userId: user.id,
+    role: user.role,
+    remarks: `Visitor allocated to employee ${hostEmployee.firstName} ${hostEmployee.lastName} (${hostEmployee.employeeCode})`,
+  });
+
+  return await Visitor.findById(visitor._id)
+    .populate('employee', 'employeeCode firstName lastName department designation status')
+    .populate('createdBy', 'name email role');
+};
+
+/**
+ * Dynamically allocate unallocated pending visitors to available eligible employees based on remaining capacity.
+ *
+ * NON-FIFO ALLOCATION STRATEGY:
+ * 1. Fetch all pending unallocated visitors (employee === null, status === 'PENDING').
+ * 2. Order visitors deterministically by visitorId ascending (e.g., VIS0001, VIS0002), NOT by registration timestamp (createdAt / FIFO).
+ * 3. Fetch active employees (status === 'Active', isDeleted === false).
+ * 4. Calculate each employee's current active visitor count (status in ['PENDING', 'APPROVED', 'CHECKED_IN']) and remaining capacity.
+ * 5. Match eligible unallocated visitors to eligible employees with remaining capacity > 0.
+ * 6. Skip full or inactive employees.
+ * 7. Save allocations and record 'VISITOR_ALLOCATED' activity logs.
+ */
+const allocateDynamic = async (user) => {
+  await processExpiredVisitors();
+
+  // NON-FIFO: Sort deterministically by visitorId (ascending), NOT by registration time (createdAt)
+  const unallocatedVisitors = await Visitor.find({
+    employee: null,
+    status: 'PENDING',
+  }).sort({ visitorId: 1 });
+
+  if (unallocatedVisitors.length === 0) {
+    return {
+      allocatedCount: 0,
+      allocatedVisitors: [],
+      message: 'No pending unallocated visitors found',
+    };
+  }
+
+  const activeEmployees = await Employee.find({
+    status: 'Active',
+    isDeleted: false,
+  });
+
+  const activeStatuses = ['PENDING', 'APPROVED', 'CHECKED_IN'];
+  const employeeCaps = await Promise.all(
+    activeEmployees.map(async (emp) => {
+      const count = await Visitor.countDocuments({
+        employee: emp._id,
+        status: { $in: activeStatuses },
+      });
+      const maxCap = emp.maxVisitorCapacity || 1;
+      return {
+        emp,
+        currentCount: count,
+        maxCapacity: maxCap,
+        remainingCapacity: Math.max(0, maxCap - count),
+      };
+    })
+  );
+
+  let eligibleEmployees = employeeCaps.filter((e) => e.remainingCapacity > 0);
+  const allocatedList = [];
+
+  for (const visitor of unallocatedVisitors) {
+    if (eligibleEmployees.length === 0) break;
+
+    // Pick available employee with remaining capacity
+    const target = eligibleEmployees[0];
+
+    visitor.employee = target.emp._id;
+    await visitor.save();
+
+    await logActivity({
+      action: 'VISITOR_ALLOCATED',
+      visitorId: visitor._id,
+      userId: user.id,
+      role: user.role,
+      remarks: `Visitor dynamically allocated to employee ${target.emp.firstName} ${target.emp.lastName} (${target.emp.employeeCode})`,
+    });
+
+    allocatedList.push(visitor);
+
+    target.currentCount += 1;
+    target.remainingCapacity -= 1;
+
+    if (target.remainingCapacity <= 0) {
+      eligibleEmployees = eligibleEmployees.filter((e) => e.remainingCapacity > 0);
+    }
+  }
+
+  return {
+    allocatedCount: allocatedList.length,
+    allocatedVisitors: allocatedList,
+    message: `${allocatedList.length} visitor(s) dynamically allocated to available employees`,
+  };
+};
+
 module.exports = {
   getAllVisitors,
   getVisitorById,
@@ -728,4 +1019,8 @@ module.exports = {
   getActiveVisitorsInside,
   getTodayCheckIns,
   getTodayCheckOuts,
+  processExpiredVisitors,
+  getUnallocatedVisitors,
+  allocateVisitor,
+  allocateDynamic,
 };

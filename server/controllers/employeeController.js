@@ -119,6 +119,23 @@ const deleteEmployee = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get employees with capacity and availability metrics
+ * @route   GET /api/v1/employees/capacity
+ * @access  Private (Receptionist, Admin)
+ */
+const getEmployeeCapacity = async (req, res, next) => {
+  try {
+    const employees = await employeeService.getEmployeeCapacityList(req.query);
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: { employees },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployeeById,
@@ -126,4 +143,5 @@ module.exports = {
   updateEmployee,
   updateEmployeeStatus,
   deleteEmployee,
+  getEmployeeCapacity,
 };

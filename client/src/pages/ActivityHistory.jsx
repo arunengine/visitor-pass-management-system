@@ -53,6 +53,7 @@ const ActivityHistory = () => {
       VISITOR_CHECKED_IN: 'bg-purple-100 text-purple-700',
       VISITOR_CHECKED_OUT: 'bg-indigo-100 text-indigo-700',
       VISITOR_CANCELLED: 'bg-amber-100 text-amber-800',
+      VISITOR_ALLOCATED: 'bg-teal-100 text-teal-800',
     };
 
     return (
@@ -89,6 +90,7 @@ const ActivityHistory = () => {
           >
             <option value="ALL">All Actions</option>
             <option value="VISITOR_CREATED">VISITOR_CREATED</option>
+            <option value="VISITOR_ALLOCATED">VISITOR_ALLOCATED</option>
             <option value="VISITOR_APPROVED">VISITOR_APPROVED</option>
             <option value="VISITOR_REJECTED">VISITOR_REJECTED</option>
             <option value="VISITOR_CHECKED_IN">VISITOR_CHECKED_IN</option>
