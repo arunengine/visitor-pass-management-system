@@ -21,7 +21,7 @@ const validateRequest = (req, res, next) => {
 const createVisitorValidation = [
   body('fullName').trim().notEmpty().withMessage('Full name is required'),
   body('phone').trim().notEmpty().withMessage('Phone number is required'),
-  body('email').optional().trim().isEmail().withMessage('Invalid email address format'),
+  body('email').optional({ checkFalsy: true }).trim().isEmail().withMessage('Invalid email address format'),
   body('company').trim().notEmpty().withMessage('Company name is required'),
   body('idProofType').trim().notEmpty().withMessage('ID Proof type is required'),
   body('idProofNumber').trim().notEmpty().withMessage('ID Proof number is required'),
@@ -34,7 +34,7 @@ const createVisitorValidation = [
 const updateVisitorValidation = [
   body('fullName').optional().trim().notEmpty().withMessage('Full name cannot be empty'),
   body('phone').optional().trim().notEmpty().withMessage('Phone number cannot be empty'),
-  body('email').optional().trim().isEmail().withMessage('Invalid email address format'),
+  body('email').optional({ checkFalsy: true }).trim().isEmail().withMessage('Invalid email address format'),
   body('company').optional().trim().notEmpty().withMessage('Company name cannot be empty'),
   body('idProofType').optional().trim().notEmpty().withMessage('ID Proof type cannot be empty'),
   body('idProofNumber').optional().trim().notEmpty().withMessage('ID Proof number cannot be empty'),

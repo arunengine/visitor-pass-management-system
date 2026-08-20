@@ -18,6 +18,15 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
     navigate(ROUTES.LOGIN);
   };
 
+  const empDoc = typeof user?.employee === 'object' ? user?.employee : null;
+  const displayName =
+    empDoc && empDoc.firstName && empDoc.lastName
+      ? `${empDoc.firstName} ${empDoc.lastName}`
+      : user?.name || 'Authenticated User';
+
+  const empCode = empDoc?.employeeCode;
+  const displaySub = [empCode, user?.role || 'GUEST'].filter(Boolean).join(' · ');
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm max-w-full">
       {/* Mobile Menu Toggle & Brand Header */}
@@ -44,11 +53,11 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
       {/* Logged in User Profile & Actions */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <div className="text-right hidden sm:block">
-          <p className="text-sm font-semibold text-gray-800">
-            {user?.name || 'Authenticated User'}
+          <p className="text-sm font-semibold text-gray-800 leading-tight">
+            {displayName}
           </p>
-          <p className="text-xs text-sky-600 font-medium">
-            {user?.role || 'GUEST'}
+          <p className="text-xs text-sky-600 font-medium mt-0.5">
+            {displaySub}
           </p>
         </div>
         <button

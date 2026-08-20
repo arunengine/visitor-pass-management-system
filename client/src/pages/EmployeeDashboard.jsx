@@ -129,7 +129,7 @@ const EmployeeDashboard = () => {
           } successfully!`
         );
         setApprovalTarget(null);
-        fetchMyVisitors();
+        await Promise.all([fetchMyVisitors(), fetchEmployeeStats()]);
       }
     } catch (err) {
       setModalError(err.response?.data?.message || 'Action failed');
@@ -222,7 +222,7 @@ const EmployeeDashboard = () => {
           }`}
         >
           <Clock className="w-4 h-4 shrink-0" />
-          <span>Pending Approvals {activeTab === 'PENDING' && `(${pagination.total})`}</span>
+          <span>Pending Approvals ({employeeStats ? employeeStats.pendingRequests : pagination.total})</span>
         </button>
 
         <button
@@ -237,7 +237,7 @@ const EmployeeDashboard = () => {
           }`}
         >
           <CheckCircle className="w-4 h-4 shrink-0" />
-          <span>Approved Requests {activeTab === 'APPROVED' && `(${pagination.total})`}</span>
+          <span>Approved Requests ({employeeStats ? employeeStats.approvedRequests : (activeTab === 'APPROVED' ? pagination.total : 0)})</span>
         </button>
 
         <button
@@ -252,7 +252,7 @@ const EmployeeDashboard = () => {
           }`}
         >
           <XCircle className="w-4 h-4 shrink-0" />
-          <span>Rejected Requests {activeTab === 'REJECTED' && `(${pagination.total})`}</span>
+          <span>Rejected Requests ({employeeStats ? employeeStats.rejectedRequests : (activeTab === 'REJECTED' ? pagination.total : 0)})</span>
         </button>
       </div>
 

@@ -101,7 +101,12 @@ const getReceptionDashboardStats = async () => {
  */
 const getEmployeeDashboardStats = async (user) => {
   const { startOfDay, endOfDay } = getTodayDateRange();
-  const employeeId = user.employee;
+  let employeeId = user.employee;
+
+  if (!employeeId && user.email) {
+    const empDoc = await Employee.findOne({ email: user.email });
+    if (empDoc) employeeId = empDoc._id;
+  }
 
   if (!employeeId) {
     return {
@@ -121,7 +126,7 @@ const getEmployeeDashboardStats = async (user) => {
     recentRequests,
   ] = await Promise.all([
     Visitor.countDocuments({ employee: employeeId, status: 'PENDING' }),
-    Visitor.countDocuments({ employee: employeeId, status: 'APPROVED' }),
+    Visitor.countDocuments({ employee: employeeId, status: { $in: ['APPROVED', 'CHECKED_IN', 'CHECKED_OUT'] } }),
     Visitor.countDocuments({ employee: employeeId, status: 'REJECTED' }),
     Visitor.countDocuments({ employee: employeeId, visitDate: { $gte: startOfDay, $lte: endOfDay } }),
     Visitor.find({ employee: employeeId })

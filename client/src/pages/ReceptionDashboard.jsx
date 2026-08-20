@@ -121,8 +121,8 @@ const ReceptionDashboard = () => {
   }, [fetchReceptionStats]);
 
   // Fetch Visitors List based on Active Tab
-  const fetchVisitorsData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchVisitorsData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true);
     try {
       let fetchFunc = getVisitors;
       let extraParams = {
@@ -154,15 +154,27 @@ const ReceptionDashboard = () => {
         setPagination(res.data.pagination);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to fetch visitors', 'error');
+      if (!isSilent) {
+        showToast(err.response?.data?.message || 'Failed to fetch visitors', 'error');
+      }
     } finally {
-      setIsLoading(false);
+      if (!isSilent) setIsLoading(false);
     }
   }, [activeTab, page, searchTerm, dateFilter, employeeFilter, statusFilter]);
 
   useEffect(() => {
     fetchVisitorsData();
   }, [fetchVisitorsData]);
+
+  // Automatic Polling: Refresh stats and table data silently every 10 seconds
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      fetchReceptionStats();
+      fetchVisitorsData(true);
+    }, 10000);
+
+    return () => clearInterval(pollInterval);
+  }, [fetchReceptionStats, fetchVisitorsData]);
 
   // Handle Register Visitor
   const handleRegisterVisitor = async (data) => {
@@ -174,6 +186,7 @@ const ReceptionDashboard = () => {
         showToast(`Visitor ${res.data.visitor.visitorId} registered successfully!`);
         setIsVisitorModalOpen(false);
         fetchVisitorsData();
+        fetchReceptionStats();
       }
     } catch (err) {
       setModalError(err.response?.data?.message || 'Registration failed');
@@ -194,6 +207,7 @@ const ReceptionDashboard = () => {
         setIsVisitorModalOpen(false);
         setSelectedVisitor(null);
         fetchVisitorsData();
+        fetchReceptionStats();
       }
     } catch (err) {
       setModalError(err.response?.data?.message || 'Update failed');
@@ -212,6 +226,7 @@ const ReceptionDashboard = () => {
         showToast(`Visitor registration ${cancelTarget.visitorId} cancelled.`);
         setCancelTarget(null);
         fetchVisitorsData();
+        fetchReceptionStats();
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Cancellation failed', 'error');
@@ -230,6 +245,7 @@ const ReceptionDashboard = () => {
         showToast(`Visitor ${checkInTarget.visitorId} CHECKED IN successfully!`);
         setCheckInTarget(null);
         fetchVisitorsData();
+        fetchReceptionStats();
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Check-in failed', 'error');
@@ -248,6 +264,7 @@ const ReceptionDashboard = () => {
         showToast(`Visitor ${checkOutTarget.visitorId} CHECKED OUT successfully!`);
         setCheckOutTarget(null);
         fetchVisitorsData();
+        fetchReceptionStats();
       }
     } catch (err) {
       showToast(err.response?.data?.message || 'Check-out failed', 'error');

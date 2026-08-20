@@ -378,10 +378,16 @@ const getMyVisitorRequests = async (user, status, query) => {
 
   // If role is EMPLOYEE, restrict query to visitors assigned to this employee's linked record
   if (user.role === 'EMPLOYEE') {
-    if (!user.employee) {
+    let employeeId = user.employee;
+    if (!employeeId && user.email) {
+      const empDoc = await Employee.findOne({ email: user.email });
+      if (empDoc) employeeId = empDoc._id;
+    }
+
+    if (!employeeId) {
       return { visitors: [], pagination: { total: 0, page, limit, totalPages: 1 } };
     }
-    filter.employee = user.employee;
+    filter.employee = employeeId;
   }
 
   // Search by Visitor Name, Phone, or Visitor ID
@@ -431,7 +437,13 @@ const approveVisitorRequest = async (id, user, remarks = '') => {
   }
 
   // Authorization Check: Only assigned employee or Admin can approve
-  if (user.role === 'EMPLOYEE' && String(visitor.employee) !== String(user.employee)) {
+  let userEmpId = user.employee;
+  if (!userEmpId && user.email) {
+    const empDoc = await Employee.findOne({ email: user.email });
+    if (empDoc) userEmpId = empDoc._id;
+  }
+
+  if (user.role === 'EMPLOYEE' && String(visitor.employee) !== String(userEmpId)) {
     const error = new Error('Forbidden: You can only approve visitor requests assigned to you');
     error.statusCode = 403;
     throw error;
@@ -493,7 +505,13 @@ const rejectVisitorRequest = async (id, user, remarks = '') => {
   }
 
   // Authorization Check: Only assigned employee or Admin can reject
-  if (user.role === 'EMPLOYEE' && String(visitor.employee) !== String(user.employee)) {
+  let userEmpId = user.employee;
+  if (!userEmpId && user.email) {
+    const empDoc = await Employee.findOne({ email: user.email });
+    if (empDoc) userEmpId = empDoc._id;
+  }
+
+  if (user.role === 'EMPLOYEE' && String(visitor.employee) !== String(userEmpId)) {
     const error = new Error('Forbidden: You can only reject visitor requests assigned to you');
     error.statusCode = 403;
     throw error;

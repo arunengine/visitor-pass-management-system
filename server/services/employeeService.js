@@ -98,6 +98,21 @@ const createEmployee = async (employeeData) => {
 
   const newEmployee = new Employee(employeeData);
   await newEmployee.save(); // Triggers pre-validate auto-code generation
+
+  // Automatically provision associated Employee User account for login
+  const User = require('../models/userModel');
+  const existingUser = await User.findOne({ email: newEmployee.email.toLowerCase() });
+  if (!existingUser) {
+    await User.create({
+      name: `${newEmployee.firstName} ${newEmployee.lastName}`,
+      email: newEmployee.email.toLowerCase(),
+      password: 'Password123',
+      role: 'EMPLOYEE',
+      employee: newEmployee._id,
+      isActive: true,
+    });
+  }
+
   return newEmployee;
 };
 

@@ -71,23 +71,36 @@ const employeeSchema = new mongoose.Schema(
 employeeSchema.pre('validate', async function (next) {
   if (this.isNew && !this.employeeCode) {
     try {
-      // Find latest created employee to determine next sequence index
-      const lastEmployee = await mongoose
+      // Find all existing employees to determine highest existing EMP sequence index
+      const employees = await mongoose
         .model('Employee')
-        .findOne({}, { employeeCode: 1 })
-        .sort({ createdAt: -1 });
+        .find({}, { employeeCode: 1 });
 
-      let nextIndex = 1;
-      if (lastEmployee && lastEmployee.employeeCode) {
-        // Extract numeric part from 'EMP005' -> 5
-        const currentNumber = parseInt(lastEmployee.employeeCode.replace('EMP', ''), 10);
-        if (!isNaN(currentNumber)) {
-          nextIndex = currentNumber + 1;
+      let maxNumber = 0;
+
+      employees.forEach((emp) => {
+        if (emp.employeeCode) {
+          // Extract numeric part from standard codes like 'EMP005' -> 5 or 'EMP12' -> 12
+          const match = emp.employeeCode.match(/^EMP(\d+)$/i);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxNumber) {
+              maxNumber = num;
+            }
+          }
         }
+      });
+
+      let nextIndex = maxNumber + 1;
+      let candidateCode = `EMP${String(nextIndex).padStart(3, '0')}`;
+
+      // Uniqueness guarantee: ensure candidateCode does not collide with any existing employee
+      while (await mongoose.model('Employee').findOne({ employeeCode: candidateCode })) {
+        nextIndex++;
+        candidateCode = `EMP${String(nextIndex).padStart(3, '0')}`;
       }
 
-      // Format with leading zeros: 1 -> EMP001, 12 -> EMP012
-      this.employeeCode = `EMP${String(nextIndex).padStart(3, '0')}`;
+      this.employeeCode = candidateCode;
     } catch (error) {
       return next(error);
     }

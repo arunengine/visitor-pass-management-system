@@ -165,10 +165,18 @@ const Login = () => {
             </button>
             <button
               type="button"
-              onClick={() => handleAutoFill('employee@company.com', 'Password123')}
+              onClick={() => handleAutoFill('ananya.sen@company.com', 'Password123')}
               className="w-full text-left px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-md border border-purple-200 transition-colors flex justify-between items-center gap-2 min-w-0"
             >
-              <span className="truncate min-w-0">💼 <strong>Employee:</strong> employee@company.com</span>
+              <span className="truncate min-w-0">💼 <strong>Emp (Ananya Sen / EMP002):</strong> ananya.sen@company.com</span>
+              <span className="font-mono bg-white px-1.5 py-0.5 rounded border text-[11px] shrink-0">Auto-Fill</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAutoFill('rajesh.kumar@company.com', 'Password123')}
+              className="w-full text-left px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-md border border-purple-200 transition-colors flex justify-between items-center gap-2 min-w-0"
+            >
+              <span className="truncate min-w-0">💼 <strong>Emp (Rajesh Kumar / EMP001):</strong> rajesh.kumar@company.com</span>
               <span className="font-mono bg-white px-1.5 py-0.5 rounded border text-[11px] shrink-0">Auto-Fill</span>
             </button>
           </div>
